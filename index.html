@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>❤阿谣亲启❤</title>
+  <style>
+    /* 全局基础样式 - 100%屏幕占比 + 重置样式（原有不变） */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "微软雅黑", "宋体", sans-serif;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden; /* 避免滚动条 */
+    }
+
+    /* 1. 启动页样式 - 自适应 + 色彩优化（原有不变） */
+    .start-page {
+      position: absolute;
+      width: 100vw;
+      height: 100vh;
+      top: 0;
+      left: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      z-index: 3;
+      background: linear-gradient(120deg, #fff 0%, #fcf5f8 100%);
+      padding: 20px;
+    }
+    /* Font Awesome字体图标信封 */
+    .envelope-icon {
+      font-size: clamp(60px, 15vw, 80px); /* 自适应大小 */
+      color: #d65a8f; /* 主题玫瑰色 */
+      margin-bottom: 20px;
+      text-shadow: 0 2px 4px rgba(214, 90, 143, 0.1);
+    }
+    .start-page h1 {
+      font-size: clamp(20px, 5vw, 26px);
+      color: #ec7241; /* 温柔玫瑰色标题 */
+      margin-bottom: 10px;
+      text-shadow: 0 1px 2px rgba(214, 90, 143, 0.1);
+    }
+    .start-page p {
+      font-size: clamp(14px, 3vw, 16px);
+      color: #927c92; /* 暖灰色副标题 */
+      margin-bottom: 10px;
+    }
+    .start-btn {
+      width: clamp(180px, 40vw, 200px);
+      height: clamp(45px, 10vw, 50px);
+      background: linear-gradient(90deg, #b8f0e2, #f8dfee);
+      border: none;
+      border-radius: 25px;
+      font-size: clamp(16px, 4vw, 18px);
+      color: #6a5a65;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(214, 90, 143, 0.1);
+      transition: transform 0.2s;
+    }
+    .start-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 16px rgba(214, 90, 143, 0.15);
+    }
+
+    /* ========== 新增：验证页样式（仅修改输入框为横线样式） ========== */
+    .verify-page {
+      position: absolute;
+      width: 100vw;
+      height: 100vh;
+      top: 0;
+      left: 0;
+      display: none; /* 默认隐藏 */
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      z-index: 2; /* 介于启动页(3)和书信页(无更高z-index)之间 */
+      background: linear-gradient(135deg, #1f2937 0%, #111827 100%); /* 陇平雪夜深色渐变 */
+      padding: 20px;
+      overflow: hidden; /* 隐藏雪花溢出 */
+    }
+    /* 落雪容器 - 模拟陇平雪景 */
+    .snow-container {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      pointer-events: none; /* 不干扰交互 */
+    }
+    .snowflake {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.75);
+      border-radius: 50%;
+      animation: snowfall linear infinite;
+    }
+    /* 落雪动画 - 缓慢自然，贴合剧本氛围 */
+    @keyframes snowfall {
+      0% {
+        transform: translateY(-10px) rotate(0deg);
+        opacity: 0;
+      }
+      10% {
+        opacity: 1;
+      }
+      90% {
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+    /* 验证内容容器 - 毛玻璃效果，不破坏原有风格 */
+    .verify-content {
+      position: relative;
+      z-index: 2; /* 高于雪花 */
+      max-width: 600px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(248, 223, 238, 0.2); /* 呼应原有粉色系 */
+      padding: clamp(30px, 6vw, 40px);
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+    .verify-content h2 {
+      font-size: clamp(18px, 4vw, 22px);
+      color: #f8dfee; /* 呼应原有粉色系 */
+      margin-bottom: clamp(20px, 4vw, 30px);
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    .verify-question {
+      font-size: clamp(16px, 3.5vw, 18px);
+      color: #ffffff;
+      margin-bottom: clamp(20px, 4vw, 25px);
+      line-height: 1.8;
+    }
+    .input-group {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(10px, 2vw, 15px);
+      margin-bottom: clamp(20px, 4vw, 25px);
+    }
+    /* ========== 核心修改：验证框改为横线样式 ========== */
+    .verify-input {
+      width: clamp(80px, 15vw, 120px);
+      height: clamp(35px, 7vw, 40px); /* 微调高度，更贴合横线视觉 */
+      padding: 5px 10px; /* 调整内边距，文字垂直居中 */
+      border: none; /* 去掉所有边框 */
+      border-bottom: 2px solid #f8dfee; /* 仅保留底部横线，呼应原有粉色系 */
+      border-radius: 0; /* 去掉圆角，保持横线简洁 */
+      background: transparent; /* 完全透明背景，凸显横线样式 */
+      color: #ffffff;
+      font-size: clamp(16px, 3vw, 18px);
+      text-align: center; /* 文字居中，贴合横线输入框 */
+      outline: none;
+      transition: border-bottom-color 0.3s; /* 仅过渡底部边框颜色 */
+    }
+    .verify-input::placeholder {
+      color: rgba(255, 255, 255, 0.4); /* 微调占位符透明度，更柔和 */
+    }
+    .verify-input:focus {
+      border-bottom-color: #b8f0e2; /* 聚焦时底部横线变色，呼应原有渐变色 */
+      box-shadow: none; /* 去掉多余阴影，保持横线简洁 */
+    }
+    /* ========== 横线输入框修改结束 ========== */
+    .verify-btn {
+      width: clamp(150px, 30vw, 180px);
+      height: clamp(40px, 8vw, 45px);
+      background: linear-gradient(90deg, #b8f0e2, #f8dfee); /* 与启动页按钮同款渐变 */
+      border: none;
+      border-radius: 8px;
+      font-size: clamp(16px, 3vw, 18px);
+      color: #6a5a65; /* 与启动页按钮同款文字色 */
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(214, 90, 143, 0.2);
+      transition: transform 0.2s;
+    }
+    .verify-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 16px rgba(214, 90, 143, 0.25);
+    }
+    .error-tip {
+      color: #ff6b6b;
+      font-size: clamp(14px, 2.5vw, 15px);
+      margin-top: 15px;
+      opacity: 0; /* 默认隐藏 */
+      transition: opacity 0.3s ease;
+    }
+    /* 输入框抖动动画（错误提示，适配横线输入框） */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    /* 2. 书信页面 - 100%屏幕占比 + 可爱图标装饰（原有不变） */
+    .letter-page {
+      position: absolute;
+      width: 100vw;
+      height: 100vh;
+      top: 0;
+      left: 0;
+      display: none;
+      background: linear-gradient(120deg, #f9f7f5 0%, #fcf5f8 100%);
+      overflow-y: auto;
+      padding: clamp(20px, 5vw, 40px);
+      position: relative;
+      overflow: hidden auto; /* 隐藏图标溢出 */
+    }
+
+    /* 可爱图标装饰 - Font Awesome字体图标（稳定显示）（原有不变） */
+    .cute-icon {
+      position: fixed;
+      font-family: "Font Awesome 6 Free";
+      font-weight: 900;
+      color: #d65a8f; /* 主题玫瑰色 */
+      opacity: 0.15; /* 清淡可见，不抢主体 */
+      pointer-events: none; /* 不影响交互 */
+      z-index: 1; /* 低于信纸 */
+      animation: float 20s linear infinite; /* 缓慢漂浮动画 */
+    }
+    /* 修复图标显示：用::before定义图标内容 */
+    .icon-cherry::before { content: "\f819"; }
+    .icon-flower::before { content: "\f490"; }
+    .icon-heart::before { content: "\f004"; }
+    .icon-butterfly::before { content: "\f527"; }
+    .icon-star::before { content: "\f005"; }
+    .icon-moon::before { content: "\f186"; }
+
+    /* 樱花图标 - 左上角 */
+    .icon-cherry {
+      font-size: clamp(25px, 5vw, 40px);
+      top: 8%;
+      left: 5%;
+      animation-delay: 0s;
+    }
+    /* 小花图标 - 右上角 */
+    .icon-flower {
+      font-size: clamp(20px, 4vw, 35px);
+      top: 12%;
+      right: 8%;
+      animation-delay: 5s;
+    }
+    /* 爱心图标 - 左侧中间 */
+    .icon-heart {
+      font-size: clamp(18px, 3.5vw, 30px);
+      top: 45%;
+      left: 6%;
+      animation-delay: 10s;
+    }
+    /* 蝴蝶图标 - 右侧中间 */
+    .icon-butterfly {
+      font-size: clamp(22px, 4.5vw, 38px);
+      top: 50%;
+      right: 5%;
+      animation-delay: 15s;
+    }
+    /* 星星图标 - 左下角 */
+    .icon-star {
+      font-size: clamp(20px, 4vw, 32px);
+      bottom: 15%;
+      left: 8%;
+      animation-delay: 8s;
+    }
+    /* 月亮图标 - 右下角 */
+    .icon-moon {
+      font-size: clamp(24px, 5vw, 42px);
+      bottom: 10%;
+      right: 10%;
+      animation-delay: 12s;
+    }
+
+    /* 图标漂浮动画 - 缓慢移动+旋转，自然可爱（原有不变） */
+    @keyframes float {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      25% { transform: translate(15px, -10px) rotate(45deg); }
+      50% { transform: translate(5px, 15px) rotate(90deg); }
+      75% { transform: translate(-10px, 5px) rotate(135deg); }
+      100% { transform: translate(0, 0) rotate(180deg); }
+    }
+
+    /* 书信容器 - 核心修复：横线精准贴合文字（原有不变） */
+    .letter-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: clamp(30px, 6vw, 40px) clamp(20px, 4vw, 30px);
+      /* 关键修复1：行高用em单位，和字体大小强绑定，缩放时同步 */
+      font-size: clamp(14px, 3vw, 16px);
+      line-height: 2em; /* 行高固定为字体大小的2倍，缩放时比例不变 */
+      /* 关键修复2：背景横线高度和行高完全一致，确保每一行文字下都有横线 */
+      background-image: linear-gradient(transparent calc(100% - 1px), #e0c8d3 1px);
+      background-size: 100% 2em; /* 背景高度 = 行高，精准对齐 */
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(214, 90, 143, 0.05);
+      color: #4a4a4a;
+      white-space: pre-line;
+      letter-spacing: 0.5px;
+      position: relative;
+      z-index: 2; /* 信纸在图标之上 */
+      /* 关键修复3：确保背景从顶部开始渲染，无偏移 */
+      background-position: 0 0;
+    }
+
+    /* 书信标题 - 色彩优化（原有不变） */
+    .letter-title {
+      text-align: center;
+      font-size: clamp(16px, 3.5vw, 18px);
+      font-weight: 600;
+      margin-bottom: 1em; /* 用em单位，和字体大小同步 */
+      display: block;
+      color: #d65a8f;
+      text-shadow: 0 1px 2px rgba(214, 90, 143, 0.1);
+    }
+
+    /* 关键词高亮（原有不变） */
+    .char.highlight {
+      color: #e70a28;
+      font-weight: 500;
+    }
+
+    /* 书信落款（原有不变） */
+    .letter-signature {
+      text-align: right;
+      margin-top: 2em; /* 用em单位，适配行高 */
+      font-size: inherit; /* 继承容器字体大小，缩放同步 */
+      display: block;
+      color: #d4005c;
+      font-weight: 500;
+    }
+
+    /* 逐字浮现动画（原有不变） */
+    .char {
+      opacity: 0;
+      animation: fadeIn 0.3s ease forwards;
+      display: inline;
+      /* 确保字符行高和容器一致，避免错位 */
+      line-height: inherit;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 移动端适配 - 简化图标，避免拥挤（原有不变，新增验证页移动端适配） */
+    @media (max-width: 768px) {
+      .letter-page {
+        padding: 15px;
+      }
+      .letter-container {
+        padding: 20px 15px;
+        /* 移动端行高比例不变，仅调整字体大小 */
+        font-size: 14px;
+        line-height: 2em;
+        background-size: 100% 2em;
+      }
+      /* 移动端只保留3个核心图标 */
+      .icon-butterfly, .icon-star, .icon-moon {
+        display: none;
+      }
+      /* 移动端图标尺寸更小 */
+      .icon-cherry { font-size: 25px; }
+      .icon-flower { font-size: 20px; }
+      .icon-heart { font-size: 18px; }
+
+      /* 新增：验证页移动端适配（横线输入框） */
+      .input-group {
+        flex-wrap: wrap;
+      }
+      .verify-input {
+        width: clamp(60px, 20vw, 100px);
+      }
+    }
+  </style>
+  <!-- 引入Font Awesome字体图标库（稳定CDN，必加！） -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+  <!-- 背景音乐 -->
+  <audio id="bgMusic" loop>
+    <source src="bg-music.mp3" type="audio/mpeg">
+    您的浏览器不支持音频播放
+  </audio>
+
+  <!-- 1. 启动页（原有不变） -->
+  <div class="start-page" id="startPage">
+    <i class="fa-solid fa-envelope envelope-icon"></i>
+    <h1>卫子谣</h1>
+    <p>这里有一封李文瑙给你的亲笔信</p>
+    <p style="font-size: 15px;color: #9ad1eb;font-style: italic;">阴差阳错 慧极必伤</p>
+    <button class="start-btn" id="startBtn">开始阅读 ✨</button>
+  </div>
+
+  <!-- ========== 新增：验证页（陇平落雪主题，横线输入框） ========== -->
+  <div class="verify-page" id="verifyPage">
+    <!-- 落雪容器 -->
+    <div class="snow-container" id="snowContainer"></div>
+    <!-- 验证内容 -->
+    <div class="verify-content">
+      <h2>陇平雪落，棋约如故</h2>
+      <div class="verify-question">
+        下棋其实还有一样很重要的东西…… <input type="text" class="verify-input" id="input1" placeholder="">，掀棋盘的<input type="text" class="verify-input" id="input2" placeholder="">
+      </div>
+      <button class="verify-btn" id="verifyBtn">赴约书信</button>
+      <div class="error-tip" id="errorTip">阿谣，你不记得了吗，那是你对我说过的话</div>
+    </div>
+  </div>
+
+  <!-- 2. 书信展示页（添加可爱图标装饰）（原有不变） -->
+  <div class="letter-page" id="letterPage">
+    <!-- 可爱字体图标（稳定显示） -->
+    <i class="cute-icon icon-cherry"></i>
+    <i class="cute-icon icon-flower"></i>
+    <i class="cute-icon icon-heart"></i>
+    <i class="cute-icon icon-butterfly"></i>
+    <i class="cute-icon icon-star"></i>
+    <i class="cute-icon icon-moon"></i>
+
+    <!-- 书信容器 -->
+    <div class="letter-container" id="letterContainer">
+      <!-- 文字由JS动态生成 -->
+    </div>
+  </div>
+
+  <script>
+    // 页面元素获取（原有+新增验证页元素）
+    const startPage = document.getElementById('startPage');
+    const startBtn = document.getElementById('startBtn');
+    const verifyPage = document.getElementById('verifyPage');
+    const verifyBtn = document.getElementById('verifyBtn');
+    const input1 = document.getElementById('input1');
+    const input2 = document.getElementById('input2');
+    const errorTip = document.getElementById('errorTip');
+    const snowContainer = document.getElementById('snowContainer');
+    const letterPage = document.getElementById('letterPage');
+    const letterContainer = document.getElementById('letterContainer');
+    const bgMusic = document.getElementById('bgMusic');
+
+    // 完整书信内容（原有不变）
+    const letterContent = `致阿谣
+
+阿谣，陇平的雪又落了，漫过窗棂时，我总想起宗学殿里你指尖点过的那盘棋。那时我掀翻棋盘，说 “下棋最重要的是有掀棋盘的勇气”，你垂眸笑我唐突，发梢沾着的雪粒，竟比煜阳的白梅还要清亮。这三年，鸠毒蚀骨，十指早已握不住笔，可那日你讲棋的模样，却比刀刃割肉的痛感还要清晰。
+
+还记得东华的雪夜吗？你拉着我看《牡丹亭》，说 “心意存，奇迹生”。我那时望着你泛红的耳尖，竟不知该如何回应 —— 两世轮回，我踏遍风雪，闯过刀光，却唯独在你面前，连一句 “心悦” 都不敢宣之于口。你总说相爱相守难，可你不知道，于我而言，最难的是遇见你时，我早已带着满身遗憾，连伸手护你周全的勇气，都怕唐突了你的温婉。
+
+我曾偷藏过你送我的《博弈论》，绳结磨断了四次，仍舍不得换。也记得你拽着我看关中人的话本，讲狐妖与书生的故事，你笑我耳根发红，却不知我那时满心都是想带你逃离这乱世的念头。可惜这世间如棋局，我终究没能为你掀翻那盘不公的棋，没能带你看陇平雪停后的晴空，甚至没能赴你 “来陇平看雪” 的约定。
+
+如今，毒痛日夜噬心，四肢早已不听使唤，有时摔下榻，连起身的力气都无。可每当痛到极致，我总会想起你教我的 “掀棋盘的勇气”—— 你说走不赢便掀桌，不认命就反抗。我一直记得，也一直试着这样活，哪怕如今只能卧在榻上，望着窗外的雪，想象你或许在东华的暖阳里，仍活得热烈而坦荡。
+
+阿谣，我这一生，生于偏见，困于仇恨，两世流离，唯有遇见你，是长生天予我的救赎。我曾怨过命运不公，恨过世事无常，可一想起你笑起来的模样，便觉得所有苦难都值了。若有来生，愿我们生在太平世，无嫡庶之分，无战乱之扰。我想同你好好下一盘棋，从晨光熹微到月色满阶，不再掀翻，只愿落子无悔。
+
+雪愈大了，我好像看见你站在廊下，笑着唤我 “李文瑙”。这一世，能遇见你，已是我此生最大的幸运。遗憾未能护你一世安稳，只愿你往后岁岁平安，得偿所愿，永远保有那份掀棋盘的勇气，活成自己喜欢的模样。
+
+若有来生，我定寻你，不问归期，只为赴一场棋约，圆一段相思。
+
+李文瑙绝笔
+
+`;
+
+    // ========== 新增：生成陇平落雪效果 ==========
+    function createSnowflakes() {
+      const snowCount = 120; // 雪花数量，营造唯美雪景
+      snowContainer.innerHTML = ''; // 清空原有雪花
+
+      for (let i = 0; i < snowCount; i++) {
+        const snowflake = document.createElement('div');
+        snowflake.className = 'snowflake';
+
+        // 随机雪花大小（2-6px，更显细腻）
+        const size = Math.random() * 4 + 2;
+        snowflake.style.width = `${size}px`;
+        snowflake.style.height = `${size}px`;
+
+        // 随机初始水平位置
+        snowflake.style.left = `${Math.random() * 100}vw`;
+        // 随机初始垂直位置（屏幕上方外侧）
+        snowflake.style.top = `${Math.random() * -50}px`;
+
+        // 随机下落速度（12-25秒，缓慢贴合剧本氛围）
+        const fallDuration = Math.random() * 13 + 12;
+        snowflake.style.animationDuration = `${fallDuration}s`;
+
+        // 随机透明度（0.6-1，层次感更强）
+        snowflake.style.opacity = Math.random() * 0.4 + 0.6;
+
+        snowContainer.appendChild(snowflake);
+      }
+    }
+
+    // 逐字书写特效函数（原有不变）
+    function writeLetter(content, container, speed = 50) {
+      container.innerHTML = '';
+      const chars = content.split('');
+      let index = 0;
+
+      const writeInterval = setInterval(() => {
+        if (index >= chars.length) {
+          clearInterval(writeInterval);
+          return;
+        }
+
+        const char = chars[index];
+        const charElement = document.createElement('span');
+        
+        if (char === '\n') {
+          charElement.innerHTML = '<br>';
+        } else {
+          charElement.textContent = char;
+          charElement.className = 'char';
+        // 关键词高亮：阿谣、李文瑙
+        if (index > 0) {
+          const prevChar = chars[index - 1];
+          // 高亮两字“阿谣”（原有逻辑，保留不变）
+          if ((prevChar === '阿' && char === '谣') || (chars[index + 1] === '谣' && char === '阿')) {
+            charElement.classList.add('highlight');
+          }
+          // 高亮三字“李文瑙”（全新修正逻辑，确保三字都高亮）
+          const isLi = (char === '李' && chars[index + 1] === '文' && chars[index + 2] === '瑙'); // 匹配“李”（后接“文”“瑙”）
+          const isWen = (char === '文' && chars[index - 1] === '李' && chars[index + 1] === '瑙'); // 匹配“文”（前“李”后“瑙”）
+          const isNao = (char === '瑙' && chars[index - 1] === '文' && chars[index - 2] === '李'); // 匹配“瑙”（前接“文”“李”）
+          if (isLi || isWen || isNao) {
+            charElement.classList.add('highlight');
+          }
+        }
+        charElement.style.animationDelay = `${index * (speed / 1000)}s`;
+         }
+
+        container.appendChild(charElement);
+        index++;
+        container.scrollTop = container.scrollHeight;
+      }, speed); 
+    }
+
+    // ========== 新增：启动页 → 验证页 ==========
+    startBtn.addEventListener('click', () => {
+      startPage.style.display = 'none';
+      verifyPage.style.display = 'flex'; // 显示验证页
+      
+      // 生成陇平落雪
+      createSnowflakes();
+
+      // 播放背景音乐（延续原有逻辑）
+      bgMusic.play().catch(() => {
+        verifyPage.addEventListener('click', () => bgMusic.play(), { once: true });
+      });
+    });
+
+    // ========== 新增：验证页 → 书信页（验证逻辑） ==========
+    verifyBtn.addEventListener('click', () => {
+      const val1 = input1.value.trim();
+      const val2 = input2.value.trim();
+
+      // 验证答案：两空均为"勇气"
+      if (val1 === '勇气' && val2 === '勇气') {
+        errorTip.style.opacity = 0; // 隐藏错误提示
+        verifyPage.style.display = 'none'; // 隐藏验证页
+        letterPage.style.display = 'block'; // 显示书信页
+        writeLetter(letterContent, letterContainer, 50); // 启动逐字书写
+      } else {
+        errorTip.style.opacity = 1; // 显示错误提示
+        // 输入框抖动效果（适配横线输入框）
+        input1.style.animation = 'shake 0.3s ease';
+        input2.style.animation = 'shake 0.3s ease';
+        // 清除抖动动画
+        setTimeout(() => {
+          input1.style.animation = '';
+          input2.style.animation = '';
+        }, 300);
+      }
+    });
+
+    // ========== 新增：输入框回车交互 ==========
+    input1.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') input2.focus(); // 回车切换到第二个输入框
+    });
+    input2.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') verifyBtn.click(); // 回车提交验证
+    });
+
+    // Esc键返回启动页（原有+重置验证页状态）
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        letterPage.style.display = 'none';
+        verifyPage.style.display = 'none';
+        startPage.style.display = 'flex';
+        bgMusic.pause();
+
+        // 重置验证页输入框和错误提示
+        input1.value = '';
+        input2.value = '';
+        errorTip.style.opacity = 0;
+      }
+    });
+
+    // 适配窗口大小变化（原有+新增验证页适配）
+    window.addEventListener('resize', () => {
+      letterPage.style.width = `${window.innerWidth}px`;
+      letterPage.style.height = `${window.innerHeight}px`;
+      startPage.style.width = `${window.innerWidth}px`;
+      startPage.style.height = `${window.innerHeight}px`;
+      verifyPage.style.width = `${window.innerWidth}px`; // 验证页窗口适配
+      verifyPage.style.height = `${window.innerHeight}px`;
+    });
+  </script>
+</body>
+</html>
